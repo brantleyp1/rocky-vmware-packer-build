@@ -1,0 +1,76 @@
+{
+  "builders": [
+    {
+      "memory": 4096,
+      "cores": "2",
+      "sockets": "2",
+      "type": "proxmox-iso",
+      "proxmox_url": "https://pve.example.com:8006/api2/json",
+      "insecure_skip_tls_verify": true,
+      "node": "pve",
+
+      "boot_command": [
+	"<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/kickstart.cfg <enter><wait>"
+      ],
+      "boot_wait": "3s",
+      "unmount_iso": true,
+      "scsi_controller": "virtio-scsi-pci",
+      "disks": [{
+        "type": "scsi",
+        "disk_size": "30G",
+        "storage_pool": "local-zfs",
+        "storage_pool_type": "zfspool"
+      }],
+      "os": "l26",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_file": "{{ user `iso_file` }}",
+      "http_directory": "http",
+      "network_adapters": [{
+        "bridge": "vmbr0",
+	"model": "virtio",
+	"vlan_tag": "10"
+      }],
+      "username": "{{ user `proxmox_user` }}",
+      "password": "{{ user `proxmox_pass` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_timeout": "20m",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "template_name": "{{ user `template_name` }}",
+      "template_description": "RockyLinux template 8.4, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "sudo -S bash {{.Path}}",
+      "script": "./provisioners/shell/baseInit.sh",
+      "type": "shell"
+    },
+    {
+      "playbook_dir": "./provisioners/ansible",
+      "playbook_file": "./provisioners/ansible/playbook.yml",
+      "role_paths": [
+        "/some/path/to/packer/ans-role-rhel8-cis-benchmarks"
+      ],
+      "type": "ansible-local"
+    },
+    {
+      "playbook_file": "/etc/ansible/playbook/home.yml",
+      "type": "ansible"
+    },
+    {
+      "execute_command": "sudo -S bash {{.Path}}",
+      "script": "provisioners/shell/post_cleanup.sh",
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "iso_file": "local:iso/Rocky-8.4-x86_64-minimal.iso",
+    "iso_checksum": "0de5f12eba93e00fefc06cdb0aa4389a0972a4212977362ea18bde46a1a1aa4f",
+    "iso_url": "https://download.rockylinux.org/pub/rocky/8.4/isos/x86_64/Rocky-8.4-x86_64-minimal.iso",
+    "ssh_password": "password",
+    "ssh_username": "brantley",
+    "template_name": "rocky8.4-tmp",
+    "proxmox_pass": "password",
+    "proxmox_user": "builder@pam"
+  }
+}

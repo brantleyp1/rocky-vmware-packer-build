@@ -1,0 +1,76 @@
+{
+  "builders": [
+    {
+      "type": "vmware-iso",
+
+      "guest_os_type": "centos8_64Guest",
+      "boot_command": [
+	"<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort}}/kickstart.cfg <enter><wait>"
+      ],
+      "http_directory": "http",
+      "cd_files": ["{{ user `ks_file` }}"],
+      "boot_wait": "4s",
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{ user `vmware_disk_size` }}",
+      "headless": "{{ user `headless` }}",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "output_directory": "{{ user `output_directory` }}",
+      "memory": "{{ user `ram` }}",
+      "shutdown_command": "sudo systemctl poweroff",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_port": 22,
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_timeout": "1800s",
+      "ssh_handshake_attempts": "30",
+      "tools_upload_flavor": "linux",
+      "version": "{{ user `version` }}",
+      "vm_name": "{{ user `vm_name` }}",
+      "vmdk_name": "{{ user `vm_name` }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo -S bash {{.Path}}",
+      "script": "./provisioners/shell/baseInit.sh"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "./provisioners/ansible/playbook.yml",
+      "playbook_dir": "./provisioners/ansible",
+      "role_paths": [
+        "../ans-role-rhel8-cis-benchmarks"
+      ]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "/etc/ansible/playbook/whitesky.yml"
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -S bash {{.Path}}",
+      "script": "provisioners/shell/post_cleanup.sh"
+    }
+  ],
+  "variables": {
+    "headless": "false",
+    "iso_checksum": "0de5f12eba93e00fefc06cdb0aa4389a0972a4212977362ea18bde46a1a1aa4f",
+    "iso_url": "file:///Users/brantley.padgett/isos/Rocky-8.4-x86_64-minimal.iso",
+    "ks_file": "./rocky.kickstart.cfg",
+
+    "version": "18",
+
+    "vmware_disk_size": "51200",
+    "ram": "2048",
+    "cpus": "2",
+    "vm_name": "rocky-8-test",
+
+    "s3_bucket": "wtsky.upload",
+
+    "ssh_password": "2019.Wh!t3sky",
+    "ssh_username": "brantley",
+
+    "output_directory": "/Users/brantley.padgett/tmp/{{ user `vm_name` }}"
+  }
+}
