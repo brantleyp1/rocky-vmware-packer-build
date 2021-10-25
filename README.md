@@ -10,14 +10,19 @@ This builder is based on Rocky 8.4 but should be compatible with almost no chang
 provisioners - directory where shell scripts and/or ansible plays/roles can live. I hvae my hardening role up a level and centralized, but mine is based on [this role](https://github.com/HarryHarcourt/Ansible-RHEL8-CIS-Benchmarks).
 
 kickstart.cfg - this is just a copy of whichever is needed for a given need
+
 rocky.kickstart-home.cfg - the version of the config I use for vms at home on Proxmox
+
 rocky.kickstart-percent.cfg - the version of the config used at work. Note, it does some things like setting new user home directories to be at /export/home to enable autofs home mounting at /home. It's not needed, but ensures home directories aren't mounted over.
+
 
 Both kickstart files set up separate partitions for /var, /var/tmp, /var/log, /home and /tmp. 
 
 
 rocky.prox.json - the json packer build for proxmox
+
 rocky.vmware.json - the json packer build for locally running vmware
+
 rocky.vsphere.json - the json packer build for vmware/vcenter
 
 ## Options
